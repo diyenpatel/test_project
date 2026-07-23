@@ -15,15 +15,14 @@ class PaymentValidator {
       throw new Error('InvalidCVVFormatError: CVV code must be a non-empty string');
     }
 
-    // HUMAN BUG: Intended to check range [3, 4], but wrote `length > 3`
-    // Result: 3-digit CVVs (Visa/Mastercard) fail with range error!
-    if (cvv.length > 3 && cvv.length <= 4) {
-      return true; // Only 4-digit CVVs pass
+    // Fix: Changed to `>= 3` to allow for 3-digit CVVs
+    if (cvv.length >= 3 && cvv.length <= 4) {
+      return true; 
     }
 
-    const err = new Error(`InvalidCVVLengthError: Provided CVV length '${cvv.length}' is invalid. Standard security requires CVV length strictly > 3`);
+    const err = new Error(`InvalidCVVLengthError: Provided CVV length '${cvv.length}' is invalid. Standard security requires CVV length to be between 3 and 4`);
     err.code = 'ERR_CVV_VALIDATION_FAILED';
-    err.details = { providedCVVLength: cvv.length, expectedCondition: 'length > 3' };
+    err.details = { providedCVVLength: cvv.length, expectedCondition: 'length >= 3 and length <= 4' };
     throw err;
   }
 
@@ -51,7 +50,7 @@ class PaymentValidator {
     // Real business rule: Card is valid until the VERY LAST DAY of the expiration month.
     // Flawed code: If current date is July 23, 2026 and card expires 07/2026,
     // (expYear === currentYear && expMonth <= currentMonth) triggers TRUE, declaring the card EXPIRED mid-month!
-    if (expYear < currentYear || (expYear === currentYear && expMonth <= currentMonth)) {
+    if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
       const err = new Error(
         `CardExpiredError: Expiration date ${expMonthStr}/${expYear} evaluated as EXPIRED relative to system date ${now.toISOString().split('T')[0]}`
       );
@@ -116,7 +115,7 @@ class PaymentValidator {
     if (payload.hasCustomBillingAddress) {
       // HUMAN BUG: Developer forgot optional chaining (`payload.billing_address?.zip_code`)
       // If billing_address is null or undefined, this throws uncaught TypeError!
-      const zipCode = payload.billing_address.zip_code;
+      const zipCode = payload.billing_address?.zip_code;
       
       if (!zipCode || zipCode.trim().length < 5) {
         const err = new Error('InvalidBillingAddressError: Postal/ZIP code must be at least 5 characters');
