@@ -1,0 +1,11 @@
+{
+  "name": "payment-gateway-frontend",
+  "version": "1.0.0",
+  "description": "Frontend UI for Payment Gateway with Live Docker Log Inspector & Edge-Case Triggers",
+  "scripts": {
+    "start": "npx serve -s src -l 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  }
+}

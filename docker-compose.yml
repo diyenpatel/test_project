@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  payment-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: payment-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    # ── Sentinel Auto-Healing Plugin Labels ─────────────────────────
+    labels:
+      - "com.sentinel.repo=diyenpatel/test_project" # Replace with target GitHub repo (e.g. owner/repo)
+      - "com.sentinel.project_id=payment-backend"
+
+  payment-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: payment-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - payment-backend
+    restart: unless-stopped
+
+  # ── Sentinel Plug-and-Play Sidecar Monitor ────────────────────────
+  sentinel-plugin:
+    image: ghcr.io/diyen48/sentinel-log-monitor:latest
+    container_name: sentinel-plugin
+    environment:
+      - SENTINEL_API_URL=http://13.50.249.156:8000/api/v1/crashes
+      - USE_DOCKER_SOCKET=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
+networks:
+  default:
+    name: payment-gateway-network

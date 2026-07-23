@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexPay - Enterprise Payment Gateway</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation / Status Header -->
+  <header class="header">
+    <div class="logo-group">
+      <div class="logo-icon">💳</div>
+      <div class="title-area">
+        <h1>ApexPay Gateway</h1>
+        <p>Production Payment Processing Environment</p>
+      </div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>Docker Container Stream Active (Port 5000)</span>
+    </div>
+  </header>
+
+  <!-- Main Workstation Layout -->
+  <main class="main-container">
+
+    <!-- Payment Gateway Form Column -->
+    <section class="glass-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>Checkout Terminal</span>
+        </h2>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">TLS 1.3 Encrypted</span>
+      </div>
+
+      <!-- Credit Card Interactive Visualizer -->
+      <div class="card-visual-wrapper">
+        <div class="credit-card" id="creditCardDisplay">
+          <div class="card-top">
+            <div class="card-chip"></div>
+            <div class="card-brand" id="cardBrandLogo">VISA</div>
+          </div>
+          <div class="card-number-display" id="displayCardNumber">•••• •••• •••• 4242</div>
+          <div class="card-bottom">
+            <div>
+              <div class="card-label">Card Holder</div>
+              <div class="card-val" id="displayName">ALEX MORGAN</div>
+            </div>
+            <div>
+              <div class="card-label">Expires</div>
+              <div class="card-val" id="displayExpiry">07/26</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Payment Form -->
+      <form id="paymentForm" onsubmit="return false;">
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label for="cardHolder">Cardholder Full Name</label>
+            <input type="text" id="cardHolder" class="input-field" value="Alex Morgan" placeholder="e.g. Alex Morgan" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" class="input-field" value="4532 8912 7734 4242" placeholder="4532 •••• •••• 4242" maxlength="19" required>
+          </div>
+
+          <div class="form-group">
+            <label for="expMonth">Exp Month</label>
+            <input type="text" id="expMonth" class="input-field" value="07" placeholder="MM" maxlength="2" required>
+          </div>
+
+          <div class="form-group">
+            <label for="expYear">Exp Year</label>
+            <input type="text" id="expYear" class="input-field" value="2026" placeholder="YYYY" maxlength="4" required>
+          </div>
+
+          <div class="form-group">
+            <label for="cvv">Security Code (CVV)</label>
+            <input type="text" id="cvv" class="input-field" value="123" placeholder="123" maxlength="4" required>
+          </div>
+
+          <div class="form-group">
+            <label for="amount">Base Amount ($)</label>
+            <input type="text" id="amount" class="input-field" value="19.99" placeholder="19.99" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="requestedTotal">Calculated Total with Tax ($)</label>
+            <input type="text" id="requestedTotal" class="input-field" value="21.39" placeholder="21.39">
+          </div>
+
+          <div class="form-group full-width">
+            <div class="checkbox-group">
+              <input type="checkbox" id="hasCustomBillingAddress">
+              <label for="hasCustomBillingAddress">Use custom billing address (Uncheck to test null reference bug)</label>
+            </div>
+          </div>
+
+        </div>
+
+        <button type="button" class="pay-btn" id="payButton">
+          🔒 Authorize Charge ($<span id="btnAmount">21.39</span>)
+        </button>
+      </form>
+
+      <!-- Bug Trigger Presets Toolbar -->
+      <div class="bug-toolbar">
+        <div class="toolbar-title">
+          <span>⚠️ Edge-Case & Production Human Bug Presets</span>
+        </div>
+        <div class="bug-buttons-grid">
+          
+          <button class="bug-btn" id="triggerCvvBug">
+            <span>⚡ CVV Length Bug (`> 3`)</span>
+            <span class="tag">Fails standard 3-digit CVV</span>
+          </button>
+
+          <button class="bug-btn" id="triggerExpBug">
+            <span>📅 Mid-Month Expiry Check Flaw</span>
+            <span class="tag">Fails valid 07/26 card mid-month</span>
+          </button>
+
+          <button class="bug-btn" id="triggerFloatBug">
+            <span>🔢 Float Precision Mismatch</span>
+            <span class="tag">$19.99 * 1.07 = 21.38930000...</span>
+          </button>
+
+          <button class="bug-btn" id="triggerNullAddressBug">
+            <span>💥 Null Billing Zip (`TypeError`)</span>
+            <span class="tag">Unchecked nested property access</span>
+          </button>
+
+          <button class="bug-btn" id="triggerRaceBug">
+            <span>🔄 Rapid Double Click Lock</span>
+            <span class="tag">Missing idempotency mutex</span>
+          </button>
+
+          <button class="bug-btn" id="triggerCircularLogBug">
+            <span>🔥 Circular JSON Serialization Error</span>
+            <span class="tag">Logger Stringify exception in stdout</span>
+          </button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Docker Log Output Terminal Column -->
+    <section class="terminal-window">
+      <div class="terminal-header">
+        <div class="window-dots">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+        </div>
+        <div class="terminal-title">docker compose logs -f payment-backend</div>
+        <div class="terminal-actions">
+          <button class="term-action-btn" id="clearLogsBtn">Clear Console</button>
+        </div>
+      </div>
+
+      <div class="terminal-body" id="logConsole">
+        <div class="log-entry INFO">
+          <div class="log-meta">
+            <span class="log-level INFO">INFO</span>
+            <span>SYSTEM_INIT</span>
+            <span>00:00:00</span>
+          </div>
+          <div class="log-json">{"service":"payment-gateway-backend","message":"Connected to Docker stdout log stream. Waiting for transactions..."}</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
