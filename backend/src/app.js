@@ -42,8 +42,13 @@ process.stderr.write = (chunk, encoding, callback) => {
 // Express JSON middleware
 app.use(express.json());
 
-// Incoming Request Logger Middleware
+// Incoming Request Logger Middleware (Excludes polling noise)
 app.use((req, res, next) => {
+  // Skip request logging for quiet polling endpoints
+  if (req.originalUrl.includes('/api/logs') || req.originalUrl.includes('/api/health')) {
+    return next();
+  }
+
   const correlationId = logger.generateCorrelationId();
   req.headers['x-correlation-id'] = correlationId;
   res.setHeader('X-Correlation-ID', correlationId);

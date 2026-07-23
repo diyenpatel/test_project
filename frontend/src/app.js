@@ -198,6 +198,5 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Initial fetch and 1-second interval log polling
+// Initial fetch on page load
 fetchLogs();
-setInterval(fetchLogs, 1000);
